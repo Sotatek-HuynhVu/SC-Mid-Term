@@ -1,22 +1,29 @@
-const { ethers } = require('hardhat');
+const { ethers } = require("hardhat");
 
 async function main() {
-    const [deployer] = await ethers.getSigners();
+  const [signer] = await ethers.getSigners();
+  console.log("Deploying contracts by:", signer.address);
 
-    console.log(
-        "Deploying contracts with the account:",
-        await deployer.getAddress()
-    );
+  const Token = await ethers.getContractFactory("Token");
+  const SwapContract = await ethers.getContractFactory("SwapContract");
 
-    const MyContract = await ethers.getContractFactory("StandardToken");
-    const myContract = await MyContract.deploy("Harry", "HAR", "0x63Cc1a5DCadF3CfB96f2044Fe4d0034D903f55bD", { gasLimit: 8000000})
-    console.log("Contract address:",  myContract.target);
+  const midTermA = await Token.connect(signer).deploy("MidTermA", "MTA");
+  console.log("MidTermA deployed to Address:", await midTermA.getAddress());
 
-  }
+  const midTermB = await Token.connect(signer).deploy("MidTermB", "MTB");
+  console.log("MidTermB deployed to Address:", await midTermB.getAddress());
 
-  main()
-    .then(() => process.exit(0))
-    .catch(error => {
-      console.error(error);
-      process.exit(1);
-    });
+  const swapContract = await SwapContract.connect(signer).deploy(signer.address);
+  console.log(
+    `Contract deployed to Address: ${await swapContract.getAddress()} and treasury address is ${
+      signer.address
+    }`
+  );
+}
+
+main()
+  .then(() => process.exit(0))
+  .catch((err) => {
+    console.log(err);
+    process.exit(1);
+  });
